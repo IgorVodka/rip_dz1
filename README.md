@@ -23,7 +23,7 @@ cd ..
 python manage.py makemigrations
 python manage.py migrate
 python manage.py createsuperuser
-python loaddata megadump.json           # тут крутые готовые данные
+python manage.py loaddata megadump.json           # тут крутые готовые данные
 ```
 * Если вдруг вываливается с ошибкой, в `views.ProfileView` нужно строчку:
 ```

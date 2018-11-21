@@ -15,7 +15,7 @@ class CustomUserAdmin(UserAdmin):
 
 class TeacherAdmin(admin.ModelAdmin):
     ordering = ['id']
-    search_fields = ['last_name', 'first_name', 'patronymic'] # TODO: to make it work case-insensitive, use mysql
+    search_fields = ['last_name', 'first_name', 'patronymic']
 
 
 admin.site.register(User, CustomUserAdmin)
