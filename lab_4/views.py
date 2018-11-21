@@ -105,7 +105,7 @@ class UpdateTeacherView(UpdateView):
 class ProfileView(FormView):
     model = User
     template_name = 'registration/profile.html'
-    form_class = UpdateUserForm                     # todo uh
+    form_class = UpdateUserForm                     # uh
 
     def get_initial(self):
         super(ProfileView, self).get_initial()
