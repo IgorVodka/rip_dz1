@@ -1,0 +1,11 @@
+.container {
+    padding-top: 10px;
+}
+
+.subject {
+    min-height: 100px;
+}
+
+.subject legend {
+    border-bottom: 1px solid #777;
+}

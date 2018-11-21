@@ -1,0 +1,15 @@
+{% extends 'main.html' %}
+
+{% block title %}
+    Регистрация выполнена
+{% endblock %}
+
+{% block content %}
+    <h1>Регистрация выполнена!</h1>
+    <p>Добро пожаловать!</p>
+    <p>
+        Сейчас вы будете автоматически переадресованы на сайт.
+        <a href="{% url 'index' %}">Нажмите сюда, если этого не происходит.</a>
+    </p>
+    <meta http-equiv="refresh" content="3;URL={% url 'index' %}" />
+{% endblock %}

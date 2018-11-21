@@ -1,0 +1,82 @@
+{% extends 'main.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {{ subject.name }}
+{% endblock %}
+
+{% block content %}
+    <div>
+        <h1>Замечательный предмет {{ subject.name }}</h1>
+        <div>Семестр: {{ subject.semester|default:"всегда" }}</div>
+        <div>Кафедра по умолчанию: {{ subject.default_department|default:"не назначена" }}</div>
+        <div>
+            Преподаватели:
+            <ul>
+            {% for teacher in subject.teachers.all %}
+                <li>
+                    <a href="{% url 'teacher' teacher.id %}">{{ teacher }}</a>
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% if user.is_authenticated %}
+    <div>
+        <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#addTeacherModal">Добавить преподавателя</a>
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block modals %}
+    {% if user.is_authenticated %}
+    <div class="modal" id="addTeacherModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Добавить преподавателя</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#newTeacher">Новый</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#existingTeacher">Существующий</a>
+                    </li>
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane active container" id="newTeacher">
+                        <p>Добавим нового преподавателя вести предмет {{ subject.name }}!</p>
+                        <form method="post" action="{% url 'add-teacher' subject.id %}">
+                            {% csrf_token %}
+                            {{ add_form|crispy }}
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Добавитб</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane container" id="existingTeacher">
+                        <form method="post" action="{% url 'appoint-teacher' subject.id %}">
+                            {% csrf_token %}
+                            {{ appoint_form|crispy }}
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Добавитб</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+{% endblock %}

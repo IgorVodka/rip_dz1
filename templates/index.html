@@ -1,0 +1,17 @@
+{% extends 'main.html' %}
+
+{% block title %}
+    Кафедры!
+{% endblock %}
+
+{% block content %}
+    <h1>МГТУ имени Н. Э. Баумана</h1>
+
+    <ul>
+    {% for department in departments %}
+        <li>
+            <a href="{% url 'department' department.id %}">{{ department.code }}</a>: {{ department.full_name }}
+        </li>
+    {% endfor %}
+    </ul>
+{% endblock %}

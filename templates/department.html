@@ -1,0 +1,101 @@
+{% extends 'main.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}{{ department.code }}{% endblock %}
+
+{% block content %}
+    <h1>{{ department.full_name }}</h1>
+    <div class="row" id="subjects">
+        Загрузка...
+    </div>
+    <script>
+        var curPage = 1;
+
+        function loadPage(page) {
+           $.get('/api/department/{{ department.id }}?page=' + page, function(data) {
+               $('#subjects').html('');
+               data['subjects'].forEach(function(item) {
+                  const semester = item.semester === 0 ? 'всегда' : item.semester;
+                  $('#subjects').append(
+                    $.parseHTML(
+                        `<div class="col-md-4 col-sm-6 col-xs-12 subject">
+                            <legend><a href="/subject/${item.id}">${item.name}</a></legend>
+                            <div>
+                                <div>Семестр: ${semester}</div>
+                            </div>
+                        </div>`
+                    )
+                  );
+
+                   $('#pagination').bootpag({
+                       total: data.pagination.total,
+                       page: data.pagination.page
+                   });
+               });
+           });
+        }
+
+        $(function () {
+            loadPage(1);
+            $('#pagination').bootpag().on('page', function (event, pageNum) {
+               loadPage(pageNum);
+               curPage = pageNum;
+            });
+
+            $('#submit-form').click(function() {
+                if ($('input[name=name]').val().trim() === '') {
+                    alert('Укажите название, пожалуйста.');
+                    return false;
+                }
+
+                $.post(
+                    '/api/department/add-subject/{{ department.id }}',
+                    $('form').serialize(),
+                    function(data) {
+                        if(data.success === true) {
+                            alert('Добавлено! Ура.');
+                            $('#addSubjectModal').modal('toggle');
+                            loadPage(1);
+                        }
+                    }
+                );
+            });
+        });
+    </script>
+
+    <div id="pagination"></div>
+
+    {% if user.is_authenticated %}
+    <div>
+        <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#addSubjectModal">Добавить предмет по AJAX!</a>
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block modals %}
+    {% if user.is_authenticated %}
+    <div class="modal" id="addSubjectModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Добавить предмет</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Пусть на {{ department.code }} будет новый предмет!</p>
+              <form>
+                  {{ form|crispy }}
+                  <div class="modal-footer">
+                    <button type="button" id="submit-form" class="btn btn-primary">Добавитб</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                  </div>
+              </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+{% endblock %}

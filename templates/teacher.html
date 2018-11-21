@@ -1,0 +1,93 @@
+{% extends 'main.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {{ teacher.last_name }} {{ teacher.first_name|slice:"1" }}. {{ teacher.patronymic|slice:"1" }}
+{% endblock %}
+
+{% block content %}
+    <h1>
+        {{ teacher }}
+        <a class="badge badge-info" href="{% url 'department' teacher.department.id %}">{{ teacher.department }}</a>
+        <a class="btn badge{% if not user.is_authenticated %} disabled{% endif %}" href="#" id="like"><3</a>
+    </h1>
+    {% if teacher.photo %}
+    <img src="/{{ teacher.photo }}" style="max-height: 400px; max-width: 400px;"  alt="Фотка">
+    {% endif %}
+    <div>
+        Ведёт предметы:
+        <ul>
+            {% for subject in teacher.subjects.all %}
+            <li>
+                <a href="{% url 'subject' subject.id %}">{{ subject }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div>
+        <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#addTeacherPhoto">Добавить пикчу</a>
+    </div>
+
+    <hr />
+    <h2>Список фанатов:</h2>
+    <ul id="fans">
+    </ul>
+
+    <script>
+        const likeButton = $('#like');
+        const fansList = $('#fans');
+
+        $(function () {
+            const refreshButton = function () {
+                $.get('/api/likes/{{ teacher.id }}', function (data) {
+                    const likes = data['likes'];
+                    likeButton.toggleClass(
+                        'badge-danger',
+                        likes.find(user => user.id === {{ user.id }}) !== undefined
+                    );
+                    fansList.html(
+                        likes.length === 0
+                            ? 'блин, никто'
+                            : likes.map(user => '<li>' + user.username + '</li>').join()
+                    );
+                });
+            };
+
+            refreshButton();
+            {% if user.is_authenticated %}
+                likeButton.click(function () {
+                    $.post('/api/likes/{{ teacher.id }}', function () {
+                        refreshButton();
+                    });
+                });
+            {% endif %}
+        });
+    </script>
+{% endblock %}
+
+{% block modals %}
+    <div class="modal" id="addTeacherPhoto" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Прикрепить картинку</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Картинка для преподавателя: {{ teacher }}</p>
+              <form enctype="multipart/form-data" method="post" action="{% url 'update-teacher' teacher.id %}">
+                  {% csrf_token %}
+                  {{ form|crispy }}
+                  <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Прикрепитб</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                  </div>
+              </form>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}

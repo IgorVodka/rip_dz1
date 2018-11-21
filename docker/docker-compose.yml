@@ -1,0 +1,62 @@
+version: '2'
+
+services:
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: lab_4
+      MYSQL_USER: megauser
+      MYSQL_PASSWORD: megapass
+    expose:
+      - 3306
+    ports:
+      - 33070:3306
+    networks:
+      - backend
+    volumes:
+      - ./megadb_volume:/var/lib/mysql      # todo?
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8079:8079
+    networks:
+      - backend
+      - frontend
+
+  python:
+    restart: always
+    build: './python/'
+    volumes:
+      - ..:/srv/www
+    expose:
+      - 8000
+    command: bash -c "cd /srv/www && gunicorn -b 0.0.0.0:8000 --reload lab_4.wsgi:application"
+    networks:
+    - backend
+    - frontend
+
+  nginx:
+    restart: always
+    image: nginx:latest
+    expose:
+      - 8080
+    ports:
+      - "8080:8080"
+    volumes:                                        # static only
+        - ../static:/srv/www/static
+        - ../lab_4/logs:/srv/www/lab_4/logs
+        - ./nginx:/etc/nginx/conf.d
+    depends_on:
+        - python
+    networks:
+    - backend
+    - frontend
+
+networks:
+  backend:
+  frontend:
